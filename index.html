@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dreamy Photo Journal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Playfair+Display:ital@0;1&family=DM+Sans:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:    #f4c2c2;
+      --rose-dk: #e8a0a0;
+      --mint:    #b5e2d8;
+      --mint-dk: #8dcec0;
+      --lav:     #d4c5f0;
+      --lav-dk:  #b8a5e0;
+      --peach:   #fddcb5;
+      --peach-dk:#f5c48a;
+      --sky:     #b8d8f0;
+      --cream:   #fdf8f2;
+      --parchment: #fef9f4;
+      --text:    #5a4a5a;
+      --text-lt: #8a7a8a;
+      --text-faint: #b8a8b8;
+      --border:  #ecdcec;
+      --shadow:  rgba(180,140,180,0.18);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, #fef0f5 0%, #f0eefe 45%, #eef8f5 100%);
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Floating bg doodles */
+    .bg-doodles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .bg-doodle {
+      position: absolute;
+      opacity: 0.08;
+      animation: floatDoodle ease-in-out infinite;
+    }
+    @keyframes floatDoodle {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      50%      { transform: translateY(-16px) rotate(6deg); }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* Rainbow border frame */
+    .border-frame {
+      position: relative;
+      border-radius: 22px;
+      padding: 3px;
+      background: repeating-linear-gradient(
+        60deg,
+        var(--rose) 0px, var(--rose) 10px,
+        var(--lav)  10px, var(--lav)  20px,
+        var(--mint) 20px, var(--mint) 30px,
+        var(--peach) 30px, var(--peach) 40px,
+        var(--sky) 40px, var(--sky) 50px
+      );
+      box-shadow: 0 12px 48px var(--shadow);
+    }
+
+    .border-inner {
+      background: var(--parchment);
+      border-radius: 20px;
+      padding: 2.5rem 2rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Inner paper texture lines */
+    .border-inner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        transparent, transparent 31px,
+        rgba(200,180,220,0.1) 31px, rgba(200,180,220,0.1) 32px
+      );
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    /* Corner deco */
+    .corner { position: absolute; font-size: 26px; opacity: 0.4; pointer-events: none; }
+    .corner.tl { top: 14px; left: 18px; }
+    .corner.tr { top: 14px; right: 18px; }
+    .corner.bl { bottom: 14px; left: 18px; }
+    .corner.br { bottom: 14px; right: 18px; }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 2.5rem; position: relative; z-index: 1; }
+
+    .header-deco-row { font-size: 22px; letter-spacing: 8px; margin-bottom: 8px; }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(28px, 6vw, 50px);
+      color: var(--text);
+      font-weight: 400;
+      line-height: 1.1;
+    }
+
+    .header h1 .script {
+      font-family: 'Caveat', cursive;
+      font-size: clamp(34px, 7vw, 58px);
+      font-style: normal;
+      color: #c070a0;
+      display: block;
+    }
+
+    .wavy-line { display: block; margin: 12px auto; }
+
+    .header-sub {
+      font-family: 'Caveat', cursive;
+      font-size: 16px;
+      color: var(--text-faint);
+      letter-spacing: 2px;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn {
+      font-family: 'Caveat', cursive;
+      font-size: 17px;
+      padding: 9px 24px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px var(--shadow); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-add {
+      background: linear-gradient(135deg, #f0a8c8, #c8a8e8);
+      color: white;
+      box-shadow: 0 3px 14px rgba(200,140,200,0.3);
+      font-weight: 700;
+    }
+    .btn-shuffle { background: linear-gradient(135deg, #a8ddd0, #a8c8e8); color: #2a6a5a; }
+    .btn-clear   { background: white; color: var(--text-lt); border: 1.5px solid var(--border); }
+
+    /* ── Stamp grid ── */
+    .stamp-grid {
+      min-height: 300px;
+      padding: 2rem 1.5rem;
+      background: rgba(255,255,255,0.7);
+      border-radius: 16px;
+      border: 1.5px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      align-items: flex-start;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .empty-hint {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+    .empty-hint .big { font-size: 44px; display: block; margin-bottom: 10px; animation: floatDoodle 3s ease-in-out infinite; }
+    .empty-hint p { font-family: 'Caveat', cursive; font-size: 18px; color: var(--text-faint); line-height: 2.2; }
+
+    /* ── Stamp ── */
+    .stamp {
+      position: relative;
+      cursor: grab;
+      user-select: none;
+      animation: stampIn 0.45s cubic-bezier(.34,1.56,.64,1) both;
+      transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes stampIn {
+      from { opacity: 0; transform: scale(0.5) rotate(-15deg); }
+      to   { opacity: 1; }
+    }
+    .stamp:active { cursor: grabbing; }
+    .stamp:hover  { transform: scale(1.07) rotate(0deg) !important; z-index: 30; }
+
+    /* Page flip on new stamp */
+    .stamp.new-stamp { animation: stampIn 0.45s cubic-bezier(.34,1.56,.64,1) both, pageFlip 0.5s ease 0.4s; }
+    @keyframes pageFlip {
+      0%   { transform: perspective(600px) rotateY(0deg); }
+      40%  { transform: perspective(600px) rotateY(-18deg); }
+      100% { transform: perspective(600px) rotateY(0deg); }
+    }
+
+    /* Polaroid */
+    .polaroid {
+      background: white;
+      padding: 8px 8px 0;
+      border: 1px solid #e8ddf4;
+      box-shadow: 4px 6px 20px var(--shadow), 0 1px 4px rgba(0,0,0,0.05);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    /* Washi tape */
+    .washi-tape {
+      position: absolute;
+      width: 70px; height: 20px;
+      top: -10px; left: 50%;
+      transform: translateX(-50%) rotate(var(--wr, -2deg));
+      border-radius: 2px;
+      opacity: 0.85;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* Perforated stamp inner */
+    .stamp-frame { position: relative; }
+    .stamp-frame::before {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      background-image:
+        radial-gradient(circle at 0 50%, transparent 4px, white 4px),
+        radial-gradient(circle at 100% 50%, transparent 4px, white 4px),
+        radial-gradient(circle at 50% 0, transparent 4px, white 4px),
+        radial-gradient(circle at 50% 100%, transparent 4px, white 4px);
+      background-repeat: repeat-y, repeat-y, repeat-x, repeat-x;
+      background-size: 10px 12px, 10px 12px, 12px 10px, 12px 10px;
+      background-position: left, right, top, bottom;
+      z-index: -1;
+    }
+
+    .stamp-img-wrap {
+      width: 118px; height: 96px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #f8f0fe, #f0f8fe);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .stamp-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .stamp-placeholder   { font-size: 36px; opacity: 0.2; }
+
+    /* Postmark */
+    .stamp-postmark {
+      position: absolute;
+      top: 5px; right: 5px;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: 'Caveat', cursive;
+      font-size: 7px; text-align: center; line-height: 1.4;
+      opacity: 0.6;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Polaroid caption */
+    .polaroid-caption { padding: 10px 6px 12px; text-align: center; }
+    .caption-text { font-family: 'Caveat', cursive; font-size: 14px; color: var(--text); line-height: 1.3; word-break: break-word; }
+    .caption-date { font-family: 'Caveat', cursive; font-size: 11px; color: var(--text-faint); margin-top: 3px; }
+
+    /* Sticker doodle on stamp */
+    .stamp-sticker { position: absolute; font-size: 18px; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1)); }
+
+    /* Delete */
+    .stamp-delete {
+      position: absolute;
+      top: -11px; left: -11px;
+      width: 24px; height: 24px;
+      background: linear-gradient(135deg, #f0a8c8, #c8a8e8);
+      color: white; border: none; border-radius: 50%;
+      font-size: 12px; cursor: pointer;
+      display: none; align-items: center; justify-content: center;
+      z-index: 40; font-weight: bold;
+      box-shadow: 0 2px 8px rgba(200,140,200,0.4);
+    }
+    .stamp:hover .stamp-delete { display: flex; }
+
+    /* ── Count ── */
+    .count-bar {
+      text-align: center;
+      margin-top: 14px;
+      font-family: 'Caveat', cursive;
+      font-size: 15px;
+      color: var(--text-faint);
+      position: relative; z-index: 1;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(160,120,180,0.3);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 22px;
+      padding: 2rem 1.75rem;
+      width: 360px; max-width: 100%;
+      box-shadow: 0 28px 70px rgba(180,140,200,0.28);
+      border: 2px solid var(--border);
+      position: relative; overflow: hidden;
+      animation: modalIn 0.3s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.8) translateY(30px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .modal::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 7px;
+      background: repeating-linear-gradient(90deg,
+        var(--rose) 0%, var(--rose) 20%,
+        var(--lav)  20%, var(--lav)  40%,
+        var(--mint) 40%, var(--mint) 60%,
+        var(--peach) 60%, var(--peach) 80%,
+        var(--sky)  80%, var(--sky)  100%
+      );
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+
+    .field-label {
+      display: block;
+      font-family: 'Caveat', cursive;
+      font-size: 14px; letter-spacing: 1px;
+      color: var(--text-lt);
+      margin-top: 14px; margin-bottom: 5px;
+    }
+
+    .modal input[type=text] {
+      width: 100%;
+      font-family: 'Caveat', cursive; font-size: 16px;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      background: var(--cream); color: var(--text);
+      border-radius: 10px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal input[type=text]:focus { border-color: var(--lav-dk); }
+
+    .upload-zone {
+      border: 2px dashed var(--lav);
+      border-radius: 12px; padding: 1.5rem 1rem;
+      text-align: center; cursor: pointer;
+      background: linear-gradient(135deg, #fef8ff, #f0f8fe);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .upload-zone:hover { border-color: var(--lav-dk); background: #f8f0fe; }
+    .upload-zone .up-icon { font-size: 30px; display: block; margin-bottom: 6px; }
+    .upload-zone p { font-family: 'Caveat', cursive; font-size: 15px; color: var(--text-faint); }
+
+    .upload-preview {
+      width: 100%; height: 120px;
+      object-fit: cover; border-radius: 10px;
+      border: 1.5px solid var(--border);
+      display: none; cursor: pointer;
+    }
+
+    .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+    .swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.12s; }
+    .swatch:hover { transform: scale(1.2); }
+    .swatch.selected { border-color: var(--text); }
+
+    .washi-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+    .washi-opt { width: 58px; height: 22px; border-radius: 3px; cursor: pointer; border: 2px solid transparent; transition: transform 0.12s; }
+    .washi-opt:hover { transform: scale(1.1); }
+    .washi-opt.selected { border-color: var(--text); }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+    .modal-actions .btn { flex: 1; text-align: center; font-size: 16px; }
+
+    @media (max-width: 520px) {
+      .border-inner { padding: 1.5rem 1rem 2rem; }
+      .stamp-grid { gap: 16px; padding: 1.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-doodles" id="bgDoodles"></div>
+
+<div class="page">
+  <div class="border-frame">
+    <div class="border-inner">
+      <span class="corner tl">✿</span>
+      <span class="corner tr">❀</span>
+      <span class="corner bl">✾</span>
+      <span class="corner br">✿</span>
+
+      <!-- Header -->
+      <header class="header">
+        <div class="header-deco-row">🌸 🌿 ☁️ 🌸</div>
+        <h1>
+          My Little
+          <span class="script">Photo Journal</span>
+        </h1>
+        <svg class="wavy-line" width="160" height="18" viewBox="0 0 160 18" fill="none">
+          <path d="M0 9 Q20 3 40 9 Q60 15 80 9 Q100 3 120 9 Q140 15 160 9" stroke="#d4c5f0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="80" cy="9" r="3.5" fill="#f4c2c2"/>
+          <circle cx="40" cy="9" r="2.5" fill="#b5e2d8"/>
+          <circle cx="120" cy="9" r="2.5" fill="#fddcb5"/>
+        </svg>
+        <p class="header-sub">✦ a collection of sweet memories ✦</p>
+      </header>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button class="btn btn-add"     onclick="openModal()">＋ Add Memory</button>
+        <button class="btn btn-shuffle" onclick="shuffleStamps()">✦ Shuffle</button>
+        <button class="btn btn-clear"   onclick="clearAll()">✕ Clear</button>
+      </div>
+
+      <!-- Stamp grid -->
+      <div class="stamp-grid" id="stampGrid"
+           ondragover="onDragOver(event)" ondrop="onDrop(event)">
+        <div class="empty-hint" id="emptyHint">
+          <span class="big">🌸</span>
+          <p>Your memories will bloom here~<br>Add a photo to begin ✨</p>
+        </div>
+      </div>
+
+      <div class="count-bar" id="countBar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">✦ New Memory Stamp</div>
+
+    <label class="field-label">📷 Photo</label>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <span class="up-icon">🌼</span>
+      <p>Click to choose a photo</p>
+    </div>
+    <img class="upload-preview" id="uploadPreview" onclick="document.getElementById('fileInput').click()" />
+    <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)" />
+
+    <label class="field-label">🏷️ Caption</label>
+    <input type="text" id="stampLabel" placeholder="sunset at the beach~" maxlength="28" />
+
+    <label class="field-label">📅 Date / Value</label>
+    <input type="text" id="stampValue" placeholder="Summer 2024" maxlength="14" />
+
+    <label class="field-label">🎨 Postmark colour</label>
+    <div class="color-swatches" id="swatches"></div>
+
+    <label class="field-label">🎀 Washi tape</label>
+    <div class="washi-picker" id="washiPicker"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-clear" onclick="closeModal()" style="border:1.5px solid #ecdcec;">Cancel</button>
+      <button class="btn btn-add"   onclick="addStamp()">Stick it! 🌸</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const COLOURS = ['#e8a0b0','#b8a0d8','#80c8b8','#f0b870','#a0c8e8','#d8a0c8','#90c890','#e8c8a0'];
+
+  const WASHI = [
+    { name:'roses',  bg:'repeating-linear-gradient(90deg,#f4c2c2 0,#f4c2c2 8px,#fddcb5 8px,#fddcb5 16px)' },
+    { name:'lavdot', bg:'radial-gradient(circle,#d4c5f0 2px,transparent 2px) 0 0/8px 8px,#fef8ff' },
+    { name:'mint',   bg:'repeating-linear-gradient(45deg,#b5e2d8 0,#b5e2d8 5px,white 5px,white 10px)' },
+    { name:'sky',    bg:'linear-gradient(#b8d8f0,#d4c5f0)' },
+    { name:'check',  bg:'repeating-conic-gradient(#f4c2c2 0% 25%,white 0% 50%) 0 0/10px 10px' },
+    { name:'lemon',  bg:'repeating-linear-gradient(135deg,#f8f0c8 0,#f8f0c8 6px,#fddcb5 6px,#fddcb5 12px)' },
+  ];
+
+  const STICKERS = ['🌸','✨','🌿','🦋','⭐','🌙','🍀','🌈','💫','🌻','🎀','🍓','🌺','🦄','🌛'];
+  const BG_ICONS  = ['✿','❀','✾','⋆','◌','✦','⁎','◦','☁','♡'];
+
+  let stamps    = [];
+  let selColour = COLOURS[0];
+  let selWashi  = WASHI[0];
+  let curImg    = null;
+  let dragSrcId = null;
+
+  // Background floating doodles
+  function initBg() {
+    const wrap = document.getElementById('bgDoodles');
+    for (let i = 0; i < 22; i++) {
+      const d = document.createElement('div');
+      d.className = 'bg-doodle';
+      d.textContent = BG_ICONS[i % BG_ICONS.length];
+      d.style.cssText = `
+        left:${Math.random()*100}%;
+        top:${Math.random()*100}%;
+        font-size:${14+Math.random()*18}px;
+        animation-duration:${4+Math.random()*5}s;
+        animation-delay:${Math.random()*5}s;
+        color:#c070a0;
+      `;
+      wrap.appendChild(d);
+    }
+  }
+
+  function initSwatches() {
+    const w = document.getElementById('swatches');
+    w.innerHTML = '';
+    COLOURS.forEach((c, i) => {
+      const s = document.createElement('div');
+      s.className = 'swatch' + (i===0?' selected':'');
+      s.style.background = c;
+      s.onclick = () => { selColour = c; w.querySelectorAll('.swatch').forEach(x=>x.classList.remove('selected')); s.classList.add('selected'); };
+      w.appendChild(s);
+    });
+  }
+
+  function initWashiPicker() {
+    const w = document.getElementById('washiPicker');
+    w.innerHTML = '';
+    WASHI.forEach((wt, i) => {
+      const d = document.createElement('div');
+      d.className = 'washi-opt' + (i===0?' selected':'');
+      d.style.background = wt.bg;
+      d.onclick = () => { selWashi = wt; w.querySelectorAll('.washi-opt').forEach(x=>x.classList.remove('selected')); d.classList.add('selected'); };
+      w.appendChild(d);
+    });
+  }
+
+  function openModal() {
+    document.getElementById('modalOverlay').classList.add('open');
+    document.getElementById('stampLabel').value = '';
+    document.getElementById('stampValue').value = '';
+    document.getElementById('uploadPreview').style.display = 'none';
+    document.getElementById('uploadZone').style.display = 'block';
+    document.getElementById('fileInput').value = '';
+    curImg = null;
+    initSwatches();
+    initWashiPicker();
+  }
+
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+  document.getElementById('modalOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  });
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      curImg = ev.target.result;
+      const p = document.getElementById('uploadPreview');
+      p.src = curImg; p.style.display = 'block';
+      document.getElementById('uploadZone').style.display = 'none';
+    };
+    r.readAsDataURL(file);
+  }
+
+  function addStamp() {
+    stamps.push({
+      id:       Date.now(),
+      image:    curImg,
+      label:    document.getElementById('stampLabel').value.trim() || 'sweet memory',
+      value:    document.getElementById('stampValue').value.trim() || '2024',
+      colour:   selColour,
+      washi:    selWashi,
+      sticker:  STICKERS[Math.floor(Math.random()*STICKERS.length)],
+      rotation: (Math.random()-0.5)*9,
+      washiRot: ((Math.random()-0.5)*7).toFixed(1),
+      isNew:    true,
+    });
+    renderStamps();
+    closeModal();
+  }
+
+  function deleteStamp(id, e) {
+    e.stopPropagation();
+    stamps = stamps.filter(s=>s.id!==id);
+    renderStamps();
+  }
+
+  function shuffleStamps() {
+    for (let i=stamps.length-1;i>0;i--) {
+      const j=Math.floor(Math.random()*(i+1));
+      [stamps[i],stamps[j]]=[stamps[j],stamps[i]];
+    }
+    stamps.forEach(s=>{s.rotation=(Math.random()-0.5)*10;s.isNew=false;});
+    renderStamps();
+  }
+
+  function clearAll() {
+    if (!stamps.length) return;
+    if (confirm('Clear all your memories? 🌸')) { stamps=[]; renderStamps(); }
+  }
+
+  function onDragOver(e) { e.preventDefault(); }
+  function onDrop(e)     { e.preventDefault(); }
+
+  function renderStamps() {
+    const grid = document.getElementById('stampGrid');
+    grid.querySelectorAll('.stamp').forEach(el=>el.remove());
+    document.getElementById('emptyHint').style.display = stamps.length?'none':'block';
+
+    stamps.forEach(stamp => {
+      const el = document.createElement('div');
+      el.className  = 'stamp'+(stamp.isNew?' new-stamp':'');
+      el.dataset.id = stamp.id;
+      el.style.transform = `rotate(${stamp.rotation}deg)`;
+      el.draggable = true;
+
+      // random sticker corner
+      const corners = [
+        'top:-12px;left:-8px',
+        'top:-12px;right:-8px',
+        'bottom:-12px;left:-8px',
+        'bottom:-12px;right:-8px',
+      ];
+      const sPos = corners[Math.floor(Math.random()*corners.length)];
+
+      const imgHTML = stamp.image
+        ? `<img src="${stamp.image}" alt="${stamp.label}" loading="lazy" />`
+        : `<div class="stamp-placeholder">🌸</div>`;
+
+      el.innerHTML = `
+        <button class="stamp-delete" onclick="deleteStamp(${stamp.id},event)" title="Remove">✕</button>
+        <div class="polaroid">
+          <div class="washi-tape" style="background:${stamp.washi.bg};--wr:${stamp.washiRot}deg;"></div>
+          <div class="stamp-frame">
+            <div class="stamp-img-wrap">
+              ${imgHTML}
+              <div class="stamp-postmark" style="border-color:${stamp.colour};color:${stamp.colour};">
+                ${stamp.label.substring(0,8).toUpperCase()}<br>${stamp.value}
+              </div>
+            </div>
+          </div>
+          <div class="polaroid-caption">
+            <div class="caption-text">${stamp.label}</div>
+            <div class="caption-date">${stamp.value}</div>
+          </div>
+          <div class="stamp-sticker" style="${sPos};">${stamp.sticker}</div>
+        </div>
+      `;
+
+      stamp.isNew = false;
+
+      el.addEventListener('dragstart', e => { dragSrcId=stamp.id; e.dataTransfer.effectAllowed='move'; });
+      el.addEventListener('dragover',  e => { e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+      el.addEventListener('drop', e => {
+        e.preventDefault();
+        if (dragSrcId===stamp.id) return;
+        const fi=stamps.findIndex(s=>s.id===dragSrcId);
+        const ti=stamps.findIndex(s=>s.id===stamp.id);
+        if (fi<0||ti<0) return;
+        stamps.splice(ti,0,stamps.splice(fi,1)[0]);
+        renderStamps();
+      });
+
+      grid.appendChild(el);
+    });
+
+    const bar = document.getElementById('countBar');
+    bar.textContent = stamps.length
+      ? `🌸 ${stamps.length} memor${stamps.length>1?'ies':'y'} collected 🌸`
+      : '';
+  }
+
+  initBg();
+  renderStamps();
+</script>
+</body>
+</html>
